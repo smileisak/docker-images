@@ -22,7 +22,7 @@ function launchmaster() {
   redis-server /redis-master/redis.conf --protected-mode no
 }
 
-# Launch master when `SENTINEL` environment variable is set
+# Launch sentinel when `SENTINEL` environment variable is set
 function launchsentinel() {
   while true; do
     master=$(redis-cli -h ${REDIS_SENTINEL_SERVICE_HOST} -p ${REDIS_SENTINEL_SERVICE_PORT} --csv SENTINEL get-master-addr-by-name mymaster | tr ',' ' ' | cut -d' ' -f1)
@@ -51,7 +51,7 @@ function launchsentinel() {
   redis-sentinel ${sentinel_conf} --protected-mode no
 }
 
-# Launch master when `SLAVE` environment variable is set
+# Launch slave when `SLAVE` environment variable is set
 function launchslave() {
   while true; do
     master=$(redis-cli -h ${REDIS_SENTINEL_SERVICE_HOST} -p ${REDIS_SENTINEL_SERVICE_PORT} --csv SENTINEL get-master-addr-by-name mymaster | tr ',' ' ' | cut -d' ' -f1)
