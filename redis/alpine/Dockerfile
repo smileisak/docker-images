@@ -12,9 +12,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-FROM alpine:edge
+FROM alpine:3.7
 
-RUN apk add -U redis=4.0.2-r0 sed bash && rm -rf /var/cache/apk/*
+RUN apk add -U redis=4.0.6-r0 sed bash && rm -rf /var/cache/apk/*
 
 COPY redis-master.conf /redis-master/redis.conf
 COPY redis-slave.conf /redis-slave/redis.conf
