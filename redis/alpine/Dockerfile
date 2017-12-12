@@ -14,7 +14,7 @@
 
 FROM alpine:edge
 
-RUN apk add -U redis=4.0.2-r0 sed bash && rm -rf /var/cache/apk/*
+RUN apk add -U redis=4.0.5-r0 sed bash && rm -rf /var/cache/apk/*
 
 COPY redis-master.conf /redis-master/redis.conf
 COPY redis-slave.conf /redis-slave/redis.conf
