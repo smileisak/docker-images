@@ -19,7 +19,7 @@ function launchmaster() {
     echo "Redis master data doesn't exist, data won't be persistent!"
     mkdir /redis-master-data
   fi
-  redis-server /redis-master/redis.conf --protected-mode no
+  redis-server /redis-master/redis.conf --protected-mode no $@
 }
 
 # Launch master when `SENTINEL` environment variable is set
@@ -48,7 +48,7 @@ function launchsentinel() {
   echo "sentinel parallel-syncs mymaster 1" >> ${sentinel_conf}
   echo "bind 0.0.0.0"
 
-  redis-sentinel ${sentinel_conf} --protected-mode no
+  redis-sentinel ${sentinel_conf} --protected-mode no $@
 }
 
 # Launch master when `SLAVE` environment variable is set
@@ -71,7 +71,7 @@ function launchslave() {
   done
   sed -i "s/%master-ip%/${master}/" /redis-slave/redis.conf
   sed -i "s/%master-port%/6379/" /redis-slave/redis.conf
-  redis-server /redis-slave/redis.conf --protected-mode no
+  redis-server /redis-slave/redis.conf --protected-mode no $@
 }
 
 
