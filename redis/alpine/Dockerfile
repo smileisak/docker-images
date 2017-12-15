@@ -28,7 +28,7 @@ COPY label-updater.sh /usr/local/bin/label-updater.sh
 COPY redis-launcher.sh /usr/local/bin/redis-launcher.sh
 COPY promote.sh /usr/local/bin/promote.sh
 
-CMD [ "touch /var/log/redisrunner.txt; chmod +w /var/log/redisrunner.txt; chmod +x /usr/local/bin/redis-launcher.sh" ]
+CMD [ "touch /var/log/redis/runner.txt; chmod +w /var/log/redis/runner.txt; chmod +x /usr/local/bin/redis-launcher.sh" ]
 CMD [ "/usr/local/bin/redis-launcher.sh | tee /var/log/redis/runner.txt" ]
 
 ENTRYPOINT [ "bash", "-c" ]
