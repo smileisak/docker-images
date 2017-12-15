@@ -14,12 +14,21 @@
 
 FROM alpine:edge
 
-RUN apk add -U redis=4.0.2-r0 sed bash && rm -rf /var/cache/apk/*
+# Add kubectl to enable sentinels to change labels during promotion
+ADD https://storage.googleapis.com/kubernetes-release/release/v1.6.4/bin/linux/amd64/kubectl /usr/local/bin/kubectl
+RUN chmod +x /usr/local/bin/kubectl
 
-COPY redis-master.conf /redis-master/redis.conf
-COPY redis-slave.conf /redis-slave/redis.conf
-COPY run.sh /run.sh
+RUN apk add --no-cache bash sed curl redis=4.0.6-r0 ca-certificates
+RUN rm -rf /var/cache/apk/*
 
-CMD [ "/run.sh" ]
+COPY redis-master.conf /etc/redis/master.conf
+COPY redis-slave.conf /etc/redis/slave.conf
+COPY redis-sentinel.conf /etc/redis/sentinel.conf
+COPY label-updater.sh /usr/local/bin/label-updater.sh
+COPY redis-launcher.sh /usr/local/bin/redis-launcher.sh
+COPY promote.sh /usr/local/bin/promote.sh
+
+CMD [ "touch /var/log/redis/runner.txt; chmod +w /var/log/redis/runner.txt; chmod +x /usr/local/bin/redis-launcher.sh" ]
+CMD [ "/usr/local/bin/redis-launcher.sh | tee /var/log/redis/runner.txt" ]
 
 ENTRYPOINT [ "bash", "-c" ]
