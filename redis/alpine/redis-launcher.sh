@@ -109,7 +109,7 @@ function launchslave() {
     i=$((i+1))
     if [[ "$i" -gt "30" ]]; then
       echo "Exiting after too many attempts"
-      kill plabeler
+      kill $plabeler
       exit 1
     fi
     echo "Connecting to master failed.  Waiting..."
