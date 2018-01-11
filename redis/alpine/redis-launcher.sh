@@ -30,7 +30,7 @@
 
 echo "Starting redis launcher"
 echo "Setting labels"
-label-updater.sh &
+label-updater.sh & plabeler=$!
 
 echo "Selecting proper service to execute"
 # Define config file locations
@@ -109,6 +109,7 @@ function launchslave() {
     i=$((i+1))
     if [[ "$i" -gt "30" ]]; then
       echo "Exiting after too many attempts"
+      kill plabeler
       exit 1
     fi
     echo "Connecting to master failed.  Waiting..."
