@@ -14,8 +14,8 @@
 # limitations under the License.
 
 # This script determines whether the pod that executes it will be a Redis Sentinel, Master, or Slave
-# The redis-ha Helm chart signals Sentinel status with environment variables. If they are not set, the newly 
-# launched pod will scan K8S to see if there is an active master. If not, it uses a deterministic means of 
+# The redis-ha Helm chart signals Sentinel status with environment variables. If they are not set, the newly
+# launched pod will scan K8S to see if there is an active master. If not, it uses a deterministic means of
 # sensing whether it should launch as master then writes master or slave to the label called redis-role
 # appropriately. It's this label that determines which LB a pod can be seen through.
 #
@@ -44,6 +44,7 @@ PORTVAR="${ENV_VAR_PREFIX}MASTER_SVC_SERVICE_PORT"
 HOSTVAR="${ENV_VAR_PREFIX}MASTER_SVC_SERVICE_HOST"
 MASTER_LB_PORT="${!PORTVAR}"
 MASTER_LB_HOST="${!HOSTVAR}"
+QUORUM=${QUORUM:2}
 
 # Launch master when `MASTER` environment variable is set
 function launchmaster() {
@@ -60,7 +61,7 @@ function launchmaster() {
 # Launch sentinel when `SENTINEL` environment variable is set
 function launchsentinel() {
   # If we know we're a sentinel, update the labels right away
-  kubectl label --overwrite pod $HOSTNAME redis-role="sentinel"  
+  kubectl label --overwrite pod $HOSTNAME redis-role="sentinel"
   echo "Using config file $SENTINEL_CONF"
 
   while true; do
@@ -80,7 +81,7 @@ function launchsentinel() {
     sleep 10
   done
 
-  echo "sentinel monitor mymaster ${MASTER_IP} ${MASTER_LB_PORT} 2" > ${SENTINEL_CONF}
+  echo "sentinel monitor mymaster ${MASTER_IP} ${MASTER_LB_PORT} ${QUORUM}" > ${SENTINEL_CONF}
   echo "sentinel down-after-milliseconds mymaster 15000" >> ${SENTINEL_CONF}
   echo "sentinel failover-timeout mymaster 30000" >> ${SENTINEL_CONF}
   echo "sentinel parallel-syncs mymaster 10" >> ${SENTINEL_CONF}
@@ -148,10 +149,12 @@ if [[ "$MASTERS" == "" ]]; then
     echo "Electing $SLAVE1 master"
     launchslave
   fi
+  exit 0
 else
   echo "Found $MASTERS"
   echo "Launching Redis in Slave mode"
   launchslave
+  exit 0
 fi
 
 echo "Launching Redis in Slave mode"
