@@ -44,7 +44,7 @@ PORTVAR="${ENV_VAR_PREFIX}MASTER_SVC_SERVICE_PORT"
 HOSTVAR="${ENV_VAR_PREFIX}MASTER_SVC_SERVICE_HOST"
 MASTER_LB_PORT="${!PORTVAR}"
 MASTER_LB_HOST="${!HOSTVAR}"
-QUORUM=${QUORUM:2}
+QUORUM=${QUORUM:-2}
 
 # Launch master when `MASTER` environment variable is set
 function launchmaster() {
