@@ -55,6 +55,11 @@ function launchmaster() {
     echo "Redis master data doesn't exist, data won't be persistent!"
     mkdir /redis-master-data
   fi
+
+  if [ ! -z "$MAX_MEMORY" ]; then
+    sed -i "s/# maxmemory <bytes>/maxmemory ${MAX_MEMORY}/" $MASTER_CONF
+  fi
+
   redis-server $MASTER_CONF --protected-mode no $@
 }
 
@@ -118,6 +123,11 @@ function launchslave() {
   done
   sed -i "s/%master-ip%/${MASTER_LB_HOST}/" $SLAVE_CONF
   sed -i "s/%master-port%/${MASTER_LB_PORT}/" $SLAVE_CONF
+
+  if [ ! -z "$MAX_MEMORY" ]; then
+    sed -i "s/# maxmemory <bytes>/maxmemory ${MAX_MEMORY}/" $SLAVE_CONF
+  fi
+
   redis-server $SLAVE_CONF --protected-mode no $@
 }
 
