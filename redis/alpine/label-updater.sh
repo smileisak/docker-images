@@ -8,8 +8,13 @@ if [ "$SENTINEL" ]; then
 fi
 
 RUNID=""
+
+# Only sets AUTH if the ENV var REDIS_PASS is set.
+REDISAUTH=""
+[ -n "$REDIS_PASS" ] && REDISAUTH="-a $REDIS_PASS" || REDISAUTH=""
+
 while true; do
-  RUNID=`redis-cli info server |grep run_id|awk -F: '{print $2}'|head -c6`
+  RUNID=`redis-cli $REDISAUTH info server |grep run_id|awk -F: '{print $2}'|head -c6`
   if [ -n "$RUNID" ]; then
     kubectl label --overwrite pod $HOSTNAME runID="$RUNID"
     break

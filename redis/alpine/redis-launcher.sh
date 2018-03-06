@@ -46,6 +46,10 @@ MASTER_LB_PORT="${!PORTVAR}"
 MASTER_LB_HOST="${!HOSTVAR}"
 QUORUM=${QUORUM:-2}
 
+# Only sets AUTH if the ENV var REDIS_PASS is set.
+REDISAUTH=""
+[ -n "$REDIS_PASS" ] && REDISAUTH="-a $REDIS_PASS" || REDISAUTH=""
+
 # Launch master when `MASTER` environment variable is set
 function launchmaster() {
   # If we know we're a master, update the labels right away
@@ -55,6 +59,11 @@ function launchmaster() {
     echo "Redis master data doesn't exist, data won't be persistent!"
     mkdir /redis-master-data
   fi
+
+  if [ -n "$REDIS_PASS" ]; then
+    sed -i "s/# requirepass/requirepass ${REDIS_PASS} \n#/" $MASTER_CONF
+  fi
+
   redis-server $MASTER_CONF --protected-mode no $@
 }
 
@@ -73,7 +82,7 @@ function launchsentinel() {
       continue
     fi
 
-    timeout -t 3 redis-cli -h ${MASTER_IP} -p ${MASTER_LB_PORT} INFO
+    timeout -t 3 redis-cli ${REDISAUTH} -h ${MASTER_IP} -p ${MASTER_LB_PORT} INFO
     if [[ "$?" == "0" ]]; then
       break
     fi
@@ -87,6 +96,10 @@ function launchsentinel() {
   echo "sentinel parallel-syncs mymaster 10" >> ${SENTINEL_CONF}
   echo "bind 0.0.0.0" >> ${SENTINEL_CONF}
   echo "sentinel client-reconfig-script mymaster /usr/local/bin/promote.sh" >> ${SENTINEL_CONF}
+
+  if [ -n "$REDIS_PASS" ]; then
+   echo "sentinel auth-pass mymaster ${REDIS_PASS}" >> ${SENTINEL_CONF}
+  fi
 
   redis-sentinel ${SENTINEL_CONF} --protected-mode no $@
 }
@@ -103,7 +116,7 @@ function launchslave() {
   i=0
   while true; do
     master=${MASTER_LB_HOST}
-    timeout -t 3 redis-cli -h ${master} -p ${MASTER_LB_PORT} INFO
+    timeout -t 3 redis-cli ${REDISAUTH} -h ${master} -p ${MASTER_LB_PORT} INFO
     if [[ "$?" == "0" ]]; then
       break
     fi
@@ -116,6 +129,12 @@ function launchslave() {
     echo "Connecting to master failed.  Waiting..."
     sleep 1
   done
+
+  if [ -n "$REDIS_PASS" ]; then
+    sed -i "s/# masterauth/masterauth ${REDIS_PASS} \n#/" $SLAVE_CONF
+    sed -i "s/# requirepass/requirepass ${REDIS_PASS} \n#/" $SLAVE_CONF
+  fi
+
   sed -i "s/%master-ip%/${MASTER_LB_HOST}/" $SLAVE_CONF
   sed -i "s/%master-port%/${MASTER_LB_PORT}/" $SLAVE_CONF
   redis-server $SLAVE_CONF --protected-mode no $@
