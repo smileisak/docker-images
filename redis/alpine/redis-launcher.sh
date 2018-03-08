@@ -60,6 +60,10 @@ function launchmaster() {
     sed -i "s/# maxmemory <bytes>/maxmemory ${MAX_MEMORY}/" $MASTER_CONF
   fi
 
+  if [ ! -z "$MAX_MEMORY_POLICY" ]; then
+    sed -i "s/# maxmemory-policy noeviction/maxmemory-policy ${MAX_MEMORY_POLICY}/" $MASTER_CONF
+  fi
+
   redis-server $MASTER_CONF --protected-mode no $@
 }
 
@@ -126,6 +130,10 @@ function launchslave() {
 
   if [ ! -z "$MAX_MEMORY" ]; then
     sed -i "s/# maxmemory <bytes>/maxmemory ${MAX_MEMORY}/" $SLAVE_CONF
+  fi
+
+  if [ ! -z "$MAX_MEMORY_POLICY" ]; then
+    sed -i "s/# maxmemory-policy noeviction/maxmemory-policy ${MAX_MEMORY_POLICY}/" $SLAVE_CONF
   fi
 
   redis-server $SLAVE_CONF --protected-mode no $@
