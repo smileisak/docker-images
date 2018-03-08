@@ -61,7 +61,7 @@ function launchmaster() {
   fi
 
   if [ ! -z "$MAX_MEMORY_POLICY" ]; then
-    sed -i "s/# maxmemory-policy noeviction/maxmemory-policy ${MAX_MEMORY_POLICY}/" $MASTER_CONF
+    sed -i "s/# maxmemory-policy volatile-lru/maxmemory-policy ${MAX_MEMORY_POLICY}/" $MASTER_CONF
   fi
 
   redis-server $MASTER_CONF --protected-mode no $@
@@ -133,7 +133,7 @@ function launchslave() {
   fi
 
   if [ ! -z "$MAX_MEMORY_POLICY" ]; then
-    sed -i "s/# maxmemory-policy noeviction/maxmemory-policy ${MAX_MEMORY_POLICY}/" $SLAVE_CONF
+    sed -i "s/# maxmemory-policy volatile-lru/maxmemory-policy ${MAX_MEMORY_POLICY}/" $SLAVE_CONF
   fi
 
   redis-server $SLAVE_CONF --protected-mode no $@
