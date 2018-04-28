@@ -64,10 +64,14 @@ function launchmaster() {
     sed -i "s/# maxmemory-policy volatile-lru/maxmemory-policy ${MAX_MEMORY_POLICY}/" $MASTER_CONF
   fi
 
-  if [ "$RDB_ENABLED" = "true" ]; then
-    echo "save 900 1" > ${MASTER_CONF}
-    echo "save 300 10" > ${MASTER_CONF}
-    echo "save 60 10000" > ${MASTER_CONF}
+  if [ "${RDB_BACKUPS}" == "true" ]; then
+    sed -i "s/#save 900 1/save 900 1/" $MASTER_CONF
+    sed -i "s/#save 300 10/save 300 10/" $MASTER_CONF
+    sed -i "s/#save 60 10000/save 60 10000/" $MASTER_CONF
+  fi
+
+  if [ "${DISKLESS_REPLICATION}" == "true" ]; then
+    sed -i "s/repl-diskless-sync no/repl-diskless-sync yes/" $MASTER_CONF
   fi
 
   redis-server $MASTER_CONF --protected-mode no $@
@@ -97,11 +101,13 @@ function launchsentinel() {
   done
 
   echo "sentinel monitor mymaster ${MASTER_IP} ${MASTER_LB_PORT} ${QUORUM}" > ${SENTINEL_CONF}
-  echo "sentinel down-after-milliseconds mymaster 15000" >> ${SENTINEL_CONF}
+  echo "sentinel down-after-milliseconds mymaster 5000" >> ${SENTINEL_CONF}
   echo "sentinel failover-timeout mymaster 30000" >> ${SENTINEL_CONF}
   echo "sentinel parallel-syncs mymaster 10" >> ${SENTINEL_CONF}
   echo "bind 0.0.0.0" >> ${SENTINEL_CONF}
   echo "sentinel client-reconfig-script mymaster /usr/local/bin/promote.sh" >> ${SENTINEL_CONF}
+
+  watch -n 10 -t refresh-sentinel.sh &
 
   redis-sentinel ${SENTINEL_CONF} --protected-mode no $@
 }
@@ -142,10 +148,14 @@ function launchslave() {
     sed -i "s/# maxmemory-policy volatile-lru/maxmemory-policy ${MAX_MEMORY_POLICY}/" $SLAVE_CONF
   fi
 
-  if [ "$RDB_ENABLED" = "true" ]; then
-    echo "save 900 1" > ${SLAVE_CONF}
-    echo "save 300 10" > ${SLAVE_CONF}
-    echo "save 60 10000" > ${SLAVE_CONF}
+  if [ "${RDB_BACKUPS}" == "true" ]; then
+    sed -i "s/#save 900 1/save 900 1/" $SLAVE_CONF
+    sed -i "s/#save 300 10/save 300 10/" $SLAVE_CONF
+    sed -i "s/#save 60 10000/save 60 10000/" $SLAVE_CONF
+  fi
+
+  if [ "${DISKLESS_REPLICATION}" == "true" ]; then
+    sed -i "s/repl-diskless-sync no/repl-diskless-sync yes/" $SLAVE_CONF
   fi
 
   redis-server $SLAVE_CONF --protected-mode no $@
@@ -162,7 +172,7 @@ fi
 if [[ "${SENTINEL}" == "true" ]]; then
   echo "Launching Redis Sentinel"
   launchsentinel
-  echo "Launcsentinel action completed"
+  echo "Launchsentinel action completed"
   exit 0
 fi
 
