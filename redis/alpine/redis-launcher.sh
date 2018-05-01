@@ -99,7 +99,9 @@ function launchsentinel() {
 
   if [ -n "$REDIS_PASS" ]; then
    echo "sentinel auth-pass mymaster ${REDIS_PASS}" >> ${SENTINEL_CONF}
-  fi
+  elif [ -f "$REDIS_PASSWORD_FILE" ]; then
+   echo "sentinel auth-pass mymaster $(cat $REDIS_PASSWORD_FILE)" >> ${SENTINEL_CONF}
+  fi  
 
   redis-sentinel ${SENTINEL_CONF} --protected-mode no $@
 }
