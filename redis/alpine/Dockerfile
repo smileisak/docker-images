@@ -18,7 +18,7 @@ FROM alpine:edge
 ADD https://storage.googleapis.com/kubernetes-release/release/v1.6.4/bin/linux/amd64/kubectl /usr/local/bin/kubectl
 RUN chmod +x /usr/local/bin/kubectl
 
-RUN apk add --no-cache bash sed curl redis=4.0.9-r0 ca-certificates
+RUN apk add --no-cache bash sed curl redis=4.0.9-r1 ca-certificates
 RUN rm -rf /var/cache/apk/*
 
 COPY redis-master.conf /etc/redis/master.conf
@@ -26,6 +26,7 @@ COPY redis-slave.conf /etc/redis/slave.conf
 COPY redis-sentinel.conf /etc/redis/sentinel.conf
 COPY label-updater.sh /usr/local/bin/label-updater.sh
 COPY redis-launcher.sh /usr/local/bin/redis-launcher.sh
+COPY refresh-sentinel.sh /usr/local/bin/refresh-sentinel.sh
 COPY promote.sh /usr/local/bin/promote.sh
 
 CMD [ "touch /var/log/redis/runner.txt; chmod +w /var/log/redis/runner.txt; chmod +x /usr/local/bin/redis-launcher.sh" ]
