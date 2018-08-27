@@ -61,7 +61,7 @@ function launchmaster() {
   fi
 
   if [ -n "$REDIS_PASS" ]; then
-    sed -i "s/# requirepass ${REDIS_PASS} \n#/" $MASTER_CONF
+    sed -i "s/# requirepass/requirepass ${REDIS_PASS} \n#/" $MASTER_CONF
   fi
 
   redis-server $MASTER_CONF --protected-mode no $@
