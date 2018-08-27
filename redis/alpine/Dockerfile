@@ -12,13 +12,13 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-FROM alpine:edge
+FROM alpine:3.8
 
 # Add kubectl to enable sentinels to change labels during promotion
-ADD https://storage.googleapis.com/kubernetes-release/release/v1.6.4/bin/linux/amd64/kubectl /usr/local/bin/kubectl
+ADD https://storage.googleapis.com/kubernetes-release/release/v1.11.2/bin/linux/amd64/kubectl /usr/local/bin/kubectl
 RUN chmod +x /usr/local/bin/kubectl
 
-RUN apk add --no-cache bash sed curl redis=4.0.9-r0 ca-certificates
+RUN apk add --no-cache bash sed curl redis=4.0.11-r0 ca-certificates
 RUN rm -rf /var/cache/apk/*
 
 COPY redis-master.conf /etc/redis/master.conf
