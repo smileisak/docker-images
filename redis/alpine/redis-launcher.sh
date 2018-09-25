@@ -139,6 +139,7 @@ function launchslave() {
 
   sed -i "s/%master-ip%/${MASTER_LB_HOST}/" $SLAVE_CONF
   sed -i "s/%master-port%/${MASTER_LB_PORT}/" $SLAVE_CONF
+  sed -i "s/%slave-ip%/$(hostname -i)/" $SLAVE_CONF
   redis-server $SLAVE_CONF --protected-mode no $@
 }
 
