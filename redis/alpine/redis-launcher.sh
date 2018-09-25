@@ -75,7 +75,7 @@ function launchsentinel() {
 
   while true; do
     # The sentinels must wait for a load-balanced master to appear then ask it for its actual IP.
-    MASTER_IP=$(kubectl get pod -o jsonpath='{range .items[*]}{.metadata.name} {..podIP} {.status.containerStatuses[0].state}{"\n"}{end}' -l redis-role=master|grep running|grep $REDIS_CHART_PREFIX|awk '{print $2}'|xargs)
+    MASTER_IP=$(kubectl get pod -o jsonpath='{range .items[*]}{.metadata.name} {..podIP} {.status.conditions[?(@.type=="Ready")].status}{"\n"}{end}' -l redis-role=master | grep True |grep $REDIS_CHART_PREFIX|awk '{print $2}'|xargs)
     echo "Current master is $MASTER_IP"
 
     if [[ -z ${MASTER_IP} ]]; then
@@ -159,10 +159,10 @@ fi
 
 # Determine whether this should be a master or slave instance
 echo "Looking for pods running as master"
-MASTERS=`kubectl get pod -o jsonpath='{range .items[*]}{.metadata.name} {..podIP} {.status.containerStatuses[0].state}{"\n"}{end}' -l redis-role=master|grep running|grep $REDIS_CHART_PREFIX`
+MASTERS=`kubectl get pod -o jsonpath='{range .items[*]}{.metadata.name} {..podIP} {.status.conditions[?(@.type=="Ready")].status}{"\n"}{end}' -l redis-role=master | grep True|grep $REDIS_CHART_PREFIX`
 if [[ "$MASTERS" == "" ]]; then
   echo "No masters found: \"$MASTERS\" Electing first master..."
-  SLAVE1=`kubectl get pod -o jsonpath='{range .items[*]}{.metadata.creationTimestamp} {.metadata.name} {.status.containerStatuses[0].state} {"\n"} {end}' -l redis-node=true |grep running|sort|awk '{print $2}'|grep $REDIS_CHART_PREFIX|head -n1`
+  SLAVE1=`kubectl get pod -o jsonpath='{range .items[*]}{.metadata.creationTimestamp} {.metadata.name} {.status.conditions[?(@.type=="Ready")].status} {"\n"} {end}' -l redis-node=true |grep True|sort|awk '{print $2}'|grep $REDIS_CHART_PREFIX|head -n1`
   if [[ "$SLAVE1" == "$HOSTNAME" ]] || [[ "$SLAVE1" == "" ]]; then
     echo "Taking master role"
     launchmaster
