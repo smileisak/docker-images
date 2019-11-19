@@ -29,6 +29,7 @@
 # will nominate a new master and change all the redis-role values appropriately.
 
 set -o pipefail
+set -e
 
 echo "Starting redis launcher"
 echo "Setting labels"
