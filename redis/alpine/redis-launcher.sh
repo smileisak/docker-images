@@ -28,6 +28,8 @@
 # During normal operation, there should be only one redis-role=master pod. If it fails, the Sentinels
 # will nominate a new master and change all the redis-role values appropriately.
 
+set -o pipefail
+
 echo "Starting redis launcher"
 echo "Setting labels"
 label-updater.sh & plabeler=$!
